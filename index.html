@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Simulação ATS - Grupo 5</title>
     <style>
         /* --- GERAL --- */
@@ -297,7 +297,8 @@
             
             <div style="font-size: 0.8em; color: #aaa; display: flex; align-items: center; gap: 10px;">
                 <span id="audio-status">🔈 Áudio Explicativo</span>
-                <button class="btn-prologue" onclick="togglePrologueAudio()" style="padding: 5px 10px;">⏯️</button>
+                <!-- botão sem onclick inline; será referenciado por id no script -->
+                <button class="btn-prologue" id="btn-prologue-audio" style="padding: 5px 10px;">⏯️</button>
             </div>
 
             <button class="btn-prologue" id="btn-next-prologue">Próximo ➜</button>
@@ -321,65 +322,9 @@
     </div>
 
 <script>
-    // --- VARIÁVEIS GERAIS ---
-    const introScreen = document.getElementById('intro-screen');
-    const prologueContainer = document.getElementById('prologue-container');
-    const gameContainer = document.getElementById('game-container');
-    const mainBg = document.getElementById('main-bg');
-    const disasterLayer = document.getElementById('disaster-layer');
-    const audioPrologue = document.getElementById('audio-prologue');
-    const audioGame = document.getElementById('audio-game');
-
-    // --- EFEITOS DE DESASTRE ---
-    let disasterInterval;
-
-    function startDisasterEffect() {
-        disasterLayer.style.display = 'block';
-        prologueContainer.classList.add('shake-screen');
-        disasterInterval = setInterval(() => {
-            const debris = document.createElement('div');
-            const isRock = Math.random() > 0.5;
-            debris.className = isRock ? 'rock' : 'dust';
-            debris.style.left = Math.random() * 100 + 'vw';
-            const size = Math.random() * (isRock ? 30 : 10) + 10;
-            debris.style.width = size + 'px';
-            debris.style.height = size + 'px';
-            debris.style.animation = `fall ${Math.random() * 1 + 0.5}s linear`;
-            disasterLayer.appendChild(debris);
-            setTimeout(() => { debris.remove(); }, 1500);
-        }, 100);
-    }
-
-    function stopDisasterEffect() {
-        clearInterval(disasterInterval);
-        disasterLayer.innerHTML = '';
-        disasterLayer.style.display = 'none';
-        prologueContainer.classList.remove('shake-screen');
-    }
-
-
-    // --- 1. TRANSIÇÃO INICIAL (ATENÇÃO -> PRÓLOGO) ---
-    document.getElementById('btn-start-intro').addEventListener('click', function() {
-        // Tenta iniciar o áudio do primeiro slide do prólogo aqui
-        // Isso "desbloqueia" o áudio no navegador
-        if(prologueData[0].audio) {
-            changeAudioTrack(prologueData[0].audio);
-        }
-
-        // Animação de saída
-        introScreen.style.transition = "opacity 1s";
-        introScreen.style.opacity = "0";
-        
-        setTimeout(() => {
-            introScreen.style.display = "none";
-            mainBg.className = "background-fixed bg-prologue"; // Muda filtro do fundo
-            updatePrologue(); // Renderiza o prólogo
-            prologueContainer.style.display = "flex";
-        }, 1000);
-    });
-
-
-    // --- 2. LÓGICA DO PRÓLOGO ---
+    /* -----------------------
+       prologueData (DECLARE ANTES dos listeners)
+       ----------------------- */
     const prologueData = [
         {
             title: "INÍCIO",
@@ -426,6 +371,77 @@
         }
     ];
 
+    // --- VARIÁVEIS GERAIS ---
+    const introScreen = document.getElementById('intro-screen');
+    const prologueContainer = document.getElementById('prologue-container');
+    const gameContainer = document.getElementById('game-container');
+    const mainBg = document.getElementById('main-bg');
+    const disasterLayer = document.getElementById('disaster-layer');
+    const audioPrologue = document.getElementById('audio-prologue');
+    const audioGame = document.getElementById('audio-game');
+    const btnPrologueAudio = document.getElementById('btn-prologue-audio');
+
+    // handlers de erro para assets (útil em deploy)
+    audioPrologue.addEventListener('error', (e) => console.warn('Erro ao carregar áudio do prólogo', e));
+    audioGame.addEventListener('error', (e) => console.warn('Erro ao carregar áudio do jogo', e));
+
+    // --- EFEITOS DE DESASTRE ---
+    let disasterInterval;
+
+    function startDisasterEffect() {
+        // evita múltiplos intervals
+        if (disasterInterval) {
+            clearInterval(disasterInterval);
+            disasterInterval = null;
+        }
+        disasterLayer.style.display = 'block';
+        prologueContainer.classList.add('shake-screen');
+        disasterInterval = setInterval(() => {
+            const debris = document.createElement('div');
+            const isRock = Math.random() > 0.5;
+            debris.className = isRock ? 'rock' : 'dust';
+            debris.style.left = Math.random() * 100 + 'vw';
+            const size = Math.random() * (isRock ? 30 : 10) + 10;
+            debris.style.width = size + 'px';
+            debris.style.height = size + 'px';
+            debris.style.animation = `fall ${Math.random() * 1 + 0.5}s linear`;
+            disasterLayer.appendChild(debris);
+            setTimeout(() => { try { debris.remove(); } catch(e){} }, 1500);
+        }, 100);
+    }
+
+    function stopDisasterEffect() {
+        if (disasterInterval) {
+            clearInterval(disasterInterval);
+            disasterInterval = null;
+        }
+        disasterLayer.innerHTML = '';
+        disasterLayer.style.display = 'none';
+        prologueContainer.classList.remove('shake-screen');
+    }
+
+
+    // --- 1. TRANSIÇÃO INICIAL (ATENÇÃO -> PRÓLOGO) ---
+    document.getElementById('btn-start-intro').addEventListener('click', function() {
+        // Tenta iniciar o áudio do primeiro slide do prólogo aqui (desbloqueado por interação)
+        if (prologueData && prologueData[0] && prologueData[0].audio) {
+            changeAudioTrack(prologueData[0].audio);
+        }
+
+        // Animação de saída
+        introScreen.style.transition = "opacity 1s";
+        introScreen.style.opacity = "0";
+        
+        setTimeout(() => {
+            introScreen.style.display = "none";
+            mainBg.className = "background-fixed bg-prologue"; // Muda filtro do fundo
+            updatePrologue(); // Renderiza o prólogo
+            prologueContainer.style.display = "flex";
+        }, 1000);
+    });
+
+
+    // --- 2. LÓGICA DO PRÓLOGO ---
     let currentPrologueIndex = 0;
 
     function updatePrologue() {
@@ -457,15 +473,16 @@
     }
 
     function changeAudioTrack(sourceUrl) {
+        if (!sourceUrl) return;
         audioPrologue.src = sourceUrl;
         audioPrologue.load();
-        audioPrologue.play().catch(e => console.log("Audio auto-play blocked (ok if first load)"));
+        audioPrologue.play().catch(e => console.log("Audio auto-play blocked (ok if first load)", e));
     }
 
     document.getElementById('btn-next-prologue').addEventListener('click', () => {
         if (currentPrologueIndex < prologueData.length - 1) {
             currentPrologueIndex++;
-            if(prologueData[currentPrologueIndex].audio) {
+            if (prologueData[currentPrologueIndex].audio) {
                 changeAudioTrack(prologueData[currentPrologueIndex].audio);
             }
             updatePrologue();
@@ -477,17 +494,24 @@
     document.getElementById('btn-prev-prologue').addEventListener('click', () => {
         if (currentPrologueIndex > 0) {
             currentPrologueIndex--;
-            if(prologueData[currentPrologueIndex].audio) {
+            if (prologueData[currentPrologueIndex].audio) {
                 changeAudioTrack(prologueData[currentPrologueIndex].audio);
             }
             updatePrologue();
         }
     });
 
+    // liga o botão de áudio via JS (substitui onclick inline)
+    btnPrologueAudio.addEventListener('click', togglePrologueAudio);
+
     function togglePrologueAudio() {
         if (audioPrologue.paused) {
-            audioPrologue.play();
-            document.getElementById('audio-status').innerText = "🔊 Tocando...";
+            audioPrologue.play().then(() => {
+                document.getElementById('audio-status').innerText = "🔊 Tocando...";
+            }).catch(e => {
+                console.log('Erro ao tocar áudio do prólogo:', e);
+                document.getElementById('audio-status').innerText = "🔇 Pausado";
+            });
         } else {
             audioPrologue.pause();
             document.getElementById('audio-status').innerText = "🔇 Pausado";
@@ -498,10 +522,10 @@
     // --- 3. TRANSIÇÃO PARA O JOGO ---
     function startTheGame() {
         // Para áudio do prólogo
-        audioPrologue.pause();
+        try { audioPrologue.pause(); } catch(e){}
         stopDisasterEffect();
 
-        // Inicia áudio do jogo
+        // Inicia áudio do jogo (vai falhar silenciosamente se autoplay bloqueado)
         audioGame.play().catch(e => console.log("Game audio:", e));
 
         prologueContainer.style.display = 'none';
