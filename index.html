@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulação ATS - Grupo 5</title>
     <style>
         /* --- GERAL --- */
@@ -41,7 +41,7 @@
             filter: brightness(0.3) contrast(1.2) blur(2px);
         }
 
-        /* EFEITOS DE DESASTRE */
+        /* EFEITOS VISUAIS */
         #disaster-layer {
             position: fixed;
             top: 0;
@@ -53,101 +53,54 @@
             display: none;
         }
 
-        .rock {
+        .rain {
             position: absolute;
-            background-color: #3e2723;
-            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
-            opacity: 0.8;
-            top: -50px;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.5));
+            width: 2px;
+            height: 50px;
+            top: -60px;
+            border-radius: 2px;
+            pointer-events: none;
         }
 
-        .dust {
+        .fire-particle {
             position: absolute;
-            background-color: rgba(100, 100, 100, 0.5);
+            background: radial-gradient(circle, rgba(255,80,0,0.8) 0%, rgba(255,0,0,0) 70%);
             border-radius: 50%;
+            bottom: -50px;
+            pointer-events: none;
             filter: blur(4px);
-            top: -50px;
+            mix-blend-mode: screen;
         }
 
         .shake-screen {
-            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) infinite;
+            animation: shake 3s cubic-bezier(.36,.07,.19,.97) infinite;
         }
 
-        @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
+        @keyframes rain-fall { to { transform: translateY(120vh); } }
+        
+        @keyframes rise { 
+            0% { transform: translateY(0) scale(1); opacity: 0.8; }
+            100% { transform: translateY(-80vh) scale(0); opacity: 0; }
+        }
         @keyframes shake {
             10%, 90% { transform: translate3d(-1px, 0, 0); }
-            20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-            40%, 60% { transform: translate3d(4px, 0, 0); }
+            20%, 80% { transform: translate3d(1px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-2px, 0, 0); }
+            40%, 60% { transform: translate3d(2px, 0, 0); }
         }
 
-
-        /* --- 1. TELA DE ABERTURA (AGORA A PRIMEIRA) --- */
-        #intro-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.9);
-            z-index: 2000;
-            display: flex; /* Visível por padrão */
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-
-        #intro-content h1 {
-            color: #ff3d00;
-            font-size: 4em;
-            margin-bottom: 0;
-            text-transform: uppercase;
-            text-shadow: 0 0 20px rgba(255, 61, 0, 0.8);
-            animation: pulse 1.5s infinite;
-            letter-spacing: 5px;
-        }
-
-        #intro-content h2 {
-            color: #fff;
-            font-weight: normal;
-            margin-top: 10px;
-            font-size: 1.5em;
-        }
-
-        #btn-start-intro {
-            background: transparent;
-            border: 3px solid #ff3d00;
-            color: #ff3d00;
-            padding: 20px 50px;
-            font-size: 1.8em;
-            font-family: inherit;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 50px;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            animation: borderPulse 2s infinite;
-        }
-        #btn-start-intro:hover {
-            background-color: #ff3d00;
-            color: #000;
-            box-shadow: 0 0 30px #ff3d00;
-        }
-
-
-        /* --- 2. TELA DE PRÓLOGO --- */
+        /* --- 1. TELA DE PRÓLOGO --- */
         #prologue-container {
             width: 90%;
             max-width: 900px;
-            background-color: rgba(20, 20, 25, 0.95); /* Cor Neutra Escura */
+            background-color: rgba(20, 20, 25, 0.95);
             border: 1px solid #444;
             border-top: 5px solid #2196F3;
             border-radius: 8px;
             padding: 40px;
             box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
-            display: none; /* Começa oculta */
+            display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
@@ -197,14 +150,67 @@
         }
         .btn-prologue:hover { background: #2196F3; color: white; }
 
+        /* --- 2. TELA DE ABERTURA/ALERTA --- */
+        #intro-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            z-index: 2000;
+            display: none; /* Começa oculta */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            opacity: 0;
+        }
+
+        #intro-content h1 {
+            color: #ff3d00;
+            font-size: 4em;
+            margin-bottom: 0;
+            text-transform: uppercase;
+            text-shadow: 0 0 20px rgba(255, 61, 0, 0.8);
+            animation: pulse 1.5s infinite;
+            letter-spacing: 5px;
+        }
+
+        #intro-content h2 {
+            color: #fff;
+            font-weight: normal;
+            margin-top: 10px;
+            font-size: 1.5em;
+        }
+
+        #btn-start-simulation {
+            background: transparent;
+            border: 3px solid #ff3d00;
+            color: #ff3d00;
+            padding: 20px 50px;
+            font-size: 1.8em;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 50px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            animation: borderPulse 2s infinite;
+        }
+        #btn-start-simulation:hover {
+            background-color: #ff3d00;
+            color: #000;
+            box-shadow: 0 0 30px #ff3d00;
+        }
 
         /* --- 3. TELA DO JOGO --- */
         #game-container {
             width: 80%;
             max-width: 800px;
-            background-color: rgba(20, 20, 20, 0.95); /* Cor Neutra Escura */
+            background-color: rgba(20, 20, 20, 0.95);
             border: 1px solid #444;
-            border-left: 5px solid #d32f2f; /* Detalhe vermelho lateral */
+            border-left: 5px solid #d32f2f;
             border-radius: 8px;
             padding: 40px;
             box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
@@ -269,24 +275,13 @@
 </head>
 <body>
 
-    <div class="background-fixed bg-game" id="main-bg"></div>
+    <div class="background-fixed bg-prologue" id="main-bg"></div>
     
     <div id="disaster-layer"></div>
 
-    <audio id="audio-prologue" src="narracao_prologo.mp3" preload="auto"></audio>
+    <audio id="audio-prologue" preload="auto"></audio> 
+    <audio id="audio-news" src="noticia.mp3" preload="auto"></audio>
     <audio id="audio-game" src="audio.mp3" preload="auto"></audio>
-
-
-    <div id="intro-screen">
-        <div id="intro-content">
-            <h1>ATENÇÃO</h1>
-            <h2>SITUAÇÃO DE DESASTRE EM ANDAMENTO</h2>
-            <h2>AÇÃO IMEDIATA NECESSÁRIA</h2>
-            
-            <button id="btn-start-intro">INICIAR SIMULAÇÃO</button>
-        </div>
-    </div>
-
 
     <div id="prologue-container">
         <div id="prologue-title">INTRODUÇÃO TÉCNICA</div>
@@ -295,16 +290,21 @@
         <div class="nav-buttons">
             <button class="btn-prologue" id="btn-prev-prologue" style="visibility: hidden;">Anterior</button>
             
-            <div style="font-size: 0.8em; color: #aaa; display: flex; align-items: center; gap: 10px;">
-                <span id="audio-status">🔈 Áudio Explicativo</span>
-                <!-- botão sem onclick inline; será referenciado por id no script -->
-                <button class="btn-prologue" id="btn-prologue-audio" style="padding: 5px 10px;">⏯️</button>
-            </div>
+            <button class="btn-prologue" id="btn-play-pause" style="min-width: 160px;">▶️ Play</button>
 
             <button class="btn-prologue" id="btn-next-prologue">Próximo ➜</button>
         </div>
     </div>
 
+    <div id="intro-screen">
+        <div id="intro-content">
+            <h1>ATENÇÃO</h1>
+            <h2>SITUAÇÃO DE DESASTRE EM ANDAMENTO</h2>
+            <h2>AÇÃO IMEDIATA NECESSÁRIA</h2>
+            
+            <button id="btn-start-simulation">INICIAR OPERAÇÃO</button>
+        </div>
+    </div>
 
     <div id="game-container">
         <div class="header">
@@ -322,229 +322,274 @@
     </div>
 
 <script>
-    /* -----------------------
-       prologueData (DECLARE ANTES dos listeners)
-       ----------------------- */
-    const prologueData = [
-        {
-            title: "INÍCIO",
-            text: "\"Quando um desastre acontece — seja um deslizamento, um incêndio, um acidente químico ou uma enchente — o caos domina os primeiros minutos. Mas existe uma lógica médica por trás das decisões que salvam vidas. Hoje você vai entender como funciona a atuação do médico em cenários de desastre, desde os primeiros passos até as situações mais complexas.\"",
-            img: "https://www.pragmatismopolitico.com.br/wp-content/uploads/2018/05/acidente-cuba-e1527030296940.jpg",
-            audio: "audio1.mp3",
-            hasEffect: true 
-        },
-        {
-            title: "O PAPEL DO MÉDICO",
-            text: "\"Um desastre é qualquer evento que ultrapassa a capacidade normal de resposta do sistema de saúde. E, nesse contexto, o médico assume papéis que vão muito além do consultório. Ele precisa entender fisiologia, toxicologia, epidemiologia e, principalmente, como priorizar vidas quando não há recursos para todos. \n\nÉ aqui que entram conceitos como triagem, manejo inicial das vias aéreas, controle de hemorragias e tomada de decisão rápida.\"",
-            img: "https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?auto=format&fit=crop&w=1920&q=80",
-            audio: "audio2.mp3"
-        },
-        {
-            title: "TRIAGEM (MÉTODO START)",
-            text: "\"A triagem é o coração da resposta médica. É nela que o médico define quem precisa de intervenção imediata, quem pode esperar e quem, infelizmente, não tem chance real de sobrevivência dado o cenário.\n\nO método START baseia-se em:\n• Respiração – Se a vítima não respira após reposicionamento das vias aéreas, é classificada como preta. Se respira >30 incursões por minuto, é vermelha.)\n• Perfusão – Tempo de enchimento capilar >2 segundos sugere choque hipovolêmico pela perda aguda de volume.)\n• Estado mental – Incapacidade de seguir comandos indica possível hipóxia ou perfusão cerebral inadequada.)\"",
-            img: "https://images.unsplash.com/photo-1516574187841-69301976e49e?auto=format&fit=crop&w=1920&q=80",
-            audio: "audio3.mp3"
-        },
-        {
-            title: "SITUAÇÕES SIMPLES",
-            text: "\"Mesmo nos desastres, a maior parte das demandas médicas são simples: ferimentos leves, crises de ansiedade, desidratação, hipoglicemia.\n\nNesses casos, o médico atua como estabilizador: faz hidratação oral, sutura lacerações, prescreve analgésicos, controla picos hipertensivos induzidos por estresse e monitora pessoas vulneráveis, como gestantes e crianças.\"",
-            img: "https://www.saude.sp.gov.br/resources/hospital-leonor-mendes-de-barros/acesso-rapido/primeiros-socorros-em-caso-de-incendio.jpg",
-            audio: "audio4.mp3"
-        },
-        {
-            title: "ALTA COMPLEXIDADE",
-            text: "\"Em outros cenários, o médico enfrenta quadros críticos. Em incêndios, por exemplo, a prioridade é tratar hipoxemia e intoxicação por monóxido de carbono — que compete com o O₂ pela hemoglobina, causando hipóxia tecidual.\nEm deslizamentos, o risco é a síndrome do esmagamento, marcada por liberação de potássio e mioglobina para o sangue, podendo causar arritmias fatais e lesão renal aguda.).\n\nEm acidentes químicos, a conduta envolve descontaminação, neutralização e uso de antídotos específicos, como atropina e pralidoxima nos organofosforados.\n\nDecisões baseadas em fisiologia e protocolos.\"",
-            img: "https://ogimg.infoglobo.com.br/in/23946251-8e9-d10/FT1086A/GettyImages-56441651.jpg",
-            audio: "audio5.mp3"
-        },
-        {
-            title: "LOGÍSTICA E LIDERANÇA",
-            text: "\"O médico também coordena equipes, solicita apoio, organiza fluxos de evacuação e adapta o cuidado conforme os recursos disponíveis.\n\nÉ ele quem conversa com bombeiros, defesa civil, enfermagem e motoristas de resgate para garantir que ninguém fique sem assistência. \n\n E, no abrigo, o trabalho continua: vigilância epidemiológica, prevenção de surtos, vacinação, controle de água e orientação psicológica.\"",
-            img: "https://cdn.folhape.com.br/img/c/1200/900/dn_arquivo/2020/01/medico1.jpg",
-            audio: "audio6.mp3"
-        },
-        {
-            title: "A ESSÊNCIA",
-            text: "\"No fim, atuar em um desastre é equilibrar ciência, humanidade e estratégia.\n\nA medicina nesses cenários não é apenas técnica; exige também coragem e organização quando tudo ao redor parece destruído.\"",
-            img: "https://blog.unyleyamed.com.br/wp-content/uploads/2023/09/shutterstock_661890763-scaled.webp",
-            audio: "audio7.mp3"
-        }
-    ];
-
-    // --- VARIÁVEIS GERAIS ---
-    const introScreen = document.getElementById('intro-screen');
+    // --- REFERÊNCIAS GERAIS ---
     const prologueContainer = document.getElementById('prologue-container');
+    const introScreen = document.getElementById('intro-screen');
     const gameContainer = document.getElementById('game-container');
     const mainBg = document.getElementById('main-bg');
     const disasterLayer = document.getElementById('disaster-layer');
+    
+    // Players de Áudio
     const audioPrologue = document.getElementById('audio-prologue');
+    const audioNews = document.getElementById('audio-news');
     const audioGame = document.getElementById('audio-game');
-    const btnPrologueAudio = document.getElementById('btn-prologue-audio');
+    
+    // Botões
+    const btnPlayPause = document.getElementById('btn-play-pause');
+    const btnNext = document.getElementById('btn-next-prologue');
+    const btnPrev = document.getElementById('btn-prev-prologue');
+    const btnStartSim = document.getElementById('btn-start-simulation');
 
-    // handlers de erro para assets (útil em deploy)
-    audioPrologue.addEventListener('error', (e) => console.warn('Erro ao carregar áudio do prólogo', e));
-    audioGame.addEventListener('error', (e) => console.warn('Erro ao carregar áudio do jogo', e));
-
-    // --- EFEITOS DE DESASTRE ---
+    // --- VARIÁVEIS DE CONTROLE ---
+    let currentPrologueIndex = 0;
+    let isFirstInteraction = true;
     let disasterInterval;
 
-    function startDisasterEffect() {
-        // evita múltiplos intervals
-        if (disasterInterval) {
-            clearInterval(disasterInterval);
-            disasterInterval = null;
-        }
+    // --- EFEITOS DE DESASTRE ---
+    function startDisasterEffect(type) {
         disasterLayer.style.display = 'block';
-        prologueContainer.classList.add('shake-screen');
-        disasterInterval = setInterval(() => {
-            const debris = document.createElement('div');
-            const isRock = Math.random() > 0.5;
-            debris.className = isRock ? 'rock' : 'dust';
-            debris.style.left = Math.random() * 100 + 'vw';
-            const size = Math.random() * (isRock ? 30 : 10) + 10;
-            debris.style.width = size + 'px';
-            debris.style.height = size + 'px';
-            debris.style.animation = `fall ${Math.random() * 1 + 0.5}s linear`;
-            disasterLayer.appendChild(debris);
-            setTimeout(() => { try { debris.remove(); } catch(e){} }, 1500);
-        }, 100);
+        disasterLayer.innerHTML = ''; 
+        clearInterval(disasterInterval);
+
+        if (type === 'rain') {
+            prologueContainer.classList.add('shake-screen');
+            disasterInterval = setInterval(() => {
+                for(let i=0; i<4; i++) {
+                    const drop = document.createElement('div');
+                    drop.className = 'rain';
+                    drop.style.left = Math.random() * 100 + 'vw';
+                    const height = Math.random() * 20 + 30;
+                    drop.style.height = height + 'px';
+                    const speed = Math.random() * 0.3 + 0.5; 
+                    drop.style.animation = `rain-fall ${speed}s linear`;
+                    disasterLayer.appendChild(drop);
+                    setTimeout(() => { drop.remove(); }, speed * 1000);
+                }
+            }, 50);
+        } else if (type === 'fire') {
+            prologueContainer.classList.remove('shake-screen');
+            disasterInterval = setInterval(() => {
+                for(let i=0; i<3; i++) {
+                    const ember = document.createElement('div');
+                    ember.className = 'fire-particle';
+                    ember.style.left = Math.random() * 100 + 'vw';
+                    const size = Math.random() * 20 + 5;
+                    ember.style.width = size + 'px';
+                    ember.style.height = size + 'px';
+                    const color = Math.random() > 0.5 ? 'rgba(255,80,0,0.8)' : 'rgba(255,200,0,0.6)';
+                    ember.style.background = `radial-gradient(circle, ${color} 0%, rgba(255,0,0,0) 70%)`;
+                    const speed = Math.random() * 1.5 + 1; 
+                    ember.style.animation = `rise ${speed}s ease-out forwards`;
+                    disasterLayer.appendChild(ember);
+                    setTimeout(() => { ember.remove(); }, 2500);
+                }
+            }, 80);
+        }
     }
 
     function stopDisasterEffect() {
-        if (disasterInterval) {
-            clearInterval(disasterInterval);
-            disasterInterval = null;
-        }
+        clearInterval(disasterInterval);
         disasterLayer.innerHTML = '';
         disasterLayer.style.display = 'none';
         prologueContainer.classList.remove('shake-screen');
     }
 
+    // --- DADOS DO PRÓLOGO ---
+    const prologueData = [
+        {
+            title: "INÍCIO",
+            text: "\"Quando um desastre acontece — seja um deslizamento, um incêndio ou uma enchente — o caos domina os primeiros minutos.\n\nMas existe uma lógica médica por trás das decisões que salvam vidas. Hoje você vai entender como funciona a atuação do médico em cenários de desastre, desde os primeiros passos até as situações mais complexas.\"",
+            img: "https://www.pragmatismopolitico.com.br/wp-content/uploads/2018/05/acidente-cuba-e1527030296940.jpg",
+            audio: "audio1.mp3",
+            effectType: 'rain'
+        },
+        {
+            title: "O PAPEL DO MÉDICO",
+            text: "\"Um desastre é qualquer evento que ultrapassa a capacidade normal de resposta do sistema de saúde. O médico assume papéis que vão muito além do consultório.\"",
+            img: "https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?auto=format&fit=crop&w=1920&q=80",
+            audio: "audio2.mp3"
+        },
+        {
+            title: "TRIAGEM (MÉTODO START)",
+            text: "\"A triagem é o coração da resposta médica. O método START baseia-se em: Respiração, Perfusão e Estado Mental.\"",
+            img: "https://images.unsplash.com/photo-1516574187841-69301976e49e?auto=format&fit=crop&w=1920&q=80",
+            audio: "audio3.mp3"
+        },
+        {
+            title: "SITUAÇÕES SIMPLES",
+            text: "\"A maioria das demandas são simples: ferimentos leves, ansiedade. O médico atua como estabilizador.\"",
+            img: "https://www.saude.sp.gov.br/resources/hospital-leonor-mendes-de-barros/acesso-rapido/primeiros-socorros-em-caso-de-incendio.jpg",
+            audio: "audio4.mp3"
+        },
+        {
+            title: "ALTA COMPLEXIDADE",
+            text: "\"Em incêndios: Intoxicação por monóxido. Em deslizamentos: Síndrome do Esmagamento. Decisões baseadas em fisiologia.\"",
+            img: "https://ogimg.infoglobo.com.br/in/23946251-8e9-d10/FT1086A/GettyImages-56441651.jpg",
+            audio: "audio5.mp3",
+            effectType: 'fire'
+        },
+        {
+            title: "LOGÍSTICA E LIDERANÇA",
+            text: "\"O médico coordena fluxos e conversa com bombeiros. No abrigo: vigilância e prevenção de surtos.\"",
+            img: "https://cdn.folhape.com.br/img/c/1200/900/dn_arquivo/2020/01/medico1.jpg",
+            audio: "audio6.mp3"
+        },
+        {
+            title: "A ESSÊNCIA",
+            text: "\"No fim, atuar em um desastre é equilibrar ciência, humanidade e estratégia. Exige coragem e organização.\"",
+            img: "https://blog.unyleyamed.com.br/wp-content/uploads/2023/09/shutterstock_661890763-scaled.webp",
+            audio: "audio7.mp3"
+        }
+    ];
 
-    // --- 1. TRANSIÇÃO INICIAL (ATENÇÃO -> PRÓLOGO) ---
-    document.getElementById('btn-start-intro').addEventListener('click', function() {
-        // Tenta iniciar o áudio do primeiro slide do prólogo aqui (desbloqueado por interação)
-        if (prologueData && prologueData[0] && prologueData[0].audio) {
-            changeAudioTrack(prologueData[0].audio);
+    // --- FUNÇÕES DE ÁUDIO ---
+    function manageAudioState(audioFile, shouldPlay = true) {
+        // Pausa sempre o anterior
+        if (!audioPrologue.paused) audioPrologue.pause();
+        
+        // Troca fonte
+        if (audioPrologue.getAttribute('src') !== audioFile) {
+            audioPrologue.src = audioFile;
+            audioPrologue.load();
         }
 
-        // Animação de saída
-        introScreen.style.transition = "opacity 1s";
-        introScreen.style.opacity = "0";
-        
-        setTimeout(() => {
-            introScreen.style.display = "none";
-            mainBg.className = "background-fixed bg-prologue"; // Muda filtro do fundo
-            updatePrologue(); // Renderiza o prólogo
-            prologueContainer.style.display = "flex";
-        }, 1000);
-    });
+        // Tenta tocar
+        if (shouldPlay && !isFirstInteraction) {
+            audioPrologue.play().then(() => {
+                btnPlayPause.innerText = "⏸️ Pausar Narração";
+            }).catch(e => {
+                console.log("Autoplay blocked");
+                btnPlayPause.innerText = "▶️ Tocar Narração";
+            });
+        } else {
+            btnPlayPause.innerText = "▶️ Tocar Narração";
+        }
+    }
 
-
-    // --- 2. LÓGICA DO PRÓLOGO ---
-    let currentPrologueIndex = 0;
-
+    // --- ATUALIZAÇÃO DO PRÓLOGO ---
     function updatePrologue() {
         const data = prologueData[currentPrologueIndex];
         document.getElementById('prologue-title').innerText = data.title;
         document.getElementById('prologue-text').innerText = data.text;
         mainBg.style.backgroundImage = `url('${data.img}')`;
 
-        // Lógica do Efeito de Desastre
-        if (data.hasEffect) {
-            startDisasterEffect();
+        if (data.effectType) {
+            startDisasterEffect(data.effectType);
         } else {
             stopDisasterEffect();
         }
 
-        document.getElementById('btn-prev-prologue').style.visibility = 
-            currentPrologueIndex === 0 ? 'hidden' : 'visible';
+        btnPrev.style.visibility = currentPrologueIndex === 0 ? 'hidden' : 'visible';
         
-        const nextBtn = document.getElementById('btn-next-prologue');
         if (currentPrologueIndex === prologueData.length - 1) {
-            nextBtn.innerText = "IR PARA SIMULAÇÃO ⚠";
-            nextBtn.style.borderColor = "#ff3d00";
-            nextBtn.style.color = "#ff3d00";
+            btnNext.innerText = "IR PARA AÇÃO ⚠";
+            btnNext.style.borderColor = "#ff3d00";
+            btnNext.style.color = "#ff3d00";
         } else {
-            nextBtn.innerText = "Próximo ➜";
-            nextBtn.style.borderColor = "#2196F3";
-            nextBtn.style.color = "#2196F3";
+            btnNext.innerText = "Próximo ➜";
+            btnNext.style.borderColor = "#2196F3";
+            btnNext.style.color = "#2196F3";
+        }
+
+        // Toca o áudio do slide (se não for o primeiro slide na primeira carga)
+        if (data.audio) {
+            const shouldPlay = !isFirstInteraction && currentPrologueIndex > 0;
+            manageAudioState(data.audio, shouldPlay);
         }
     }
 
-    function changeAudioTrack(sourceUrl) {
-        if (!sourceUrl) return;
-        audioPrologue.src = sourceUrl;
-        audioPrologue.load();
-        audioPrologue.play().catch(e => console.log("Audio auto-play blocked (ok if first load)", e));
-    }
+    // --- EVENTOS ---
+    
+    // BOTÃO "PRÓXIMO" / "IR PARA AÇÃO"
+    btnNext.addEventListener('click', () => {
+        // 1. Libera áudio do navegador no primeiro clique
+        if(isFirstInteraction) {
+            isFirstInteraction = false;
+        }
 
-    document.getElementById('btn-next-prologue').addEventListener('click', () => {
+        // 2. Se ainda tem slides, avança
         if (currentPrologueIndex < prologueData.length - 1) {
             currentPrologueIndex++;
-            if (prologueData[currentPrologueIndex].audio) {
-                changeAudioTrack(prologueData[currentPrologueIndex].audio);
-            }
             updatePrologue();
-        } else {
-            startTheGame(); // FIM DO PRÓLOGO -> VAI PARA O JOGO
+        } 
+        // 3. Se acabou, vai para a tela de ALERTA
+        else {
+            // Para efeitos e áudio do prólogo
+            stopDisasterEffect();
+            audioPrologue.pause(); 
+            
+            // --- PONTO CRÍTICO: INICIA ÁUDIO DA NOTÍCIA AQUI ---
+            audioNews.currentTime = 0;
+            audioNews.play().catch(e => console.error("Erro noticia:", e));
+            // ---------------------------------------------------
+
+            showIntroScreen();
         }
     });
 
-    document.getElementById('btn-prev-prologue').addEventListener('click', () => {
+    btnPrev.addEventListener('click', () => {
         if (currentPrologueIndex > 0) {
             currentPrologueIndex--;
-            if (prologueData[currentPrologueIndex].audio) {
-                changeAudioTrack(prologueData[currentPrologueIndex].audio);
-            }
             updatePrologue();
         }
     });
 
-    // liga o botão de áudio via JS (substitui onclick inline)
-    btnPrologueAudio.addEventListener('click', togglePrologueAudio);
-
-    function togglePrologueAudio() {
+    btnPlayPause.addEventListener('click', () => {
+        if (isFirstInteraction) {
+            isFirstInteraction = false;
+            manageAudioState(prologueData[currentPrologueIndex].audio, true);
+            return;
+        }
         if (audioPrologue.paused) {
-            audioPrologue.play().then(() => {
-                document.getElementById('audio-status').innerText = "🔊 Tocando...";
-            }).catch(e => {
-                console.log('Erro ao tocar áudio do prólogo:', e);
-                document.getElementById('audio-status').innerText = "🔇 Pausado";
-            });
+            audioPrologue.play();
+            btnPlayPause.innerText = "⏸️ Pausar Narração";
         } else {
             audioPrologue.pause();
-            document.getElementById('audio-status').innerText = "🔇 Pausado";
+            btnPlayPause.innerText = "▶️ Tocar Narração";
         }
-    }
+    });
 
-
-    // --- 3. TRANSIÇÃO PARA O JOGO ---
-    function startTheGame() {
-        // Para áudio do prólogo
-        try { audioPrologue.pause(); } catch(e){}
-        stopDisasterEffect();
-
-        // Inicia áudio do jogo (vai falhar silenciosamente se autoplay bloqueado)
-        audioGame.play().catch(e => console.log("Game audio:", e));
-
+    // --- TRANSIÇÃO 1: PRÓLOGO -> ALERTA ---
+    function showIntroScreen() {
         prologueContainer.style.display = 'none';
+        
+        // Fundo do jogo
         mainBg.style.backgroundImage = "url('img1.jpg')";
-        mainBg.className = "background-fixed bg-game"; // Volta filtro escuro/vermelho
+        mainBg.className = "background-fixed bg-game";
 
-        gameContainer.style.display = 'flex';
-        setTimeout(() => {
-            gameContainer.style.opacity = '1';
-            gameContainer.style.animation = 'fadeIn 1s ease-out';
-            goTo('start');
-        }, 100);
+        // Mostra tela vermelha
+        introScreen.style.display = 'flex';
+        setTimeout(() => { introScreen.style.opacity = '1'; }, 50);
     }
 
+    // --- TRANSIÇÃO 2: ALERTA -> JOGO ---
+    btnStartSim.addEventListener('click', () => {
+        // Para notícia
+        audioNews.pause();
+        
+        // Inicia som do jogo
+        audioGame.currentTime = 0;
+        audioGame.play().catch(e => console.error("Erro game audio:", e));
 
-    // --- 4. MOTOR DO JOGO ---
+        // Fade out alerta
+        introScreen.style.transition = "opacity 1s";
+        introScreen.style.opacity = '0';
+
+        setTimeout(() => {
+            introScreen.style.display = 'none';
+            gameContainer.style.display = 'flex';
+            setTimeout(() => {
+                gameContainer.style.opacity = '1';
+                gameContainer.style.animation = 'fadeIn 1s ease-out';
+                goTo('start');
+            }, 100);
+        }, 1000);
+    });
+
+    // --- MOTOR DO JOGO (Seu roteiro) ---
     const story = {
         "start": {
-            text: "[06:05] CONEXÃO ESTABELECIDA COM POSTO DE COMANDO...\n\nO deslizamento acabou de acontecer. A repórter confirmou o caos local. Você é o Coordenador Médico.\n\nRecursos limitados. Vidas em risco.\n\nSua primeira decisão definirá toda a operação. Qual sua prioridade?",
+            text: "[06:05] CONEXÃO ESTABELECIDA COM POSTO DE COMANDO...\n\nO deslizamento acabou de acontecer. Qual sua prioridade?",
             choices: [
                 { text: "A - Ir pessoalmente para a Zona de Impacto (Triagem)", target: "erro_gestao" },
                 { text: "B - Focar na Gestão (Posto de Comando)", target: "fase_2" }
@@ -685,6 +730,9 @@
             choicesContainer.style.opacity = "1";
         }, 100);
     }
+
+    // INICIALIZAR: Slide 0 do prólogo (com áudio pausado)
+    updatePrologue();
 </script>
 </body>
 </html>
